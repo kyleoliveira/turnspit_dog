@@ -18,15 +18,15 @@ end
 # max_boil_volume = 9.0   # set by kettle size, burner, etc.
 # boil_off = 0.82
 # efficiency = 0.75
-
+calcs = BrewingCalculations.new
 
 puts '**************************************************************'
 puts '* BrewCalc.py provided by Joel Sleppy, jdsleppyATgmailDOTcom *'
 puts '**************************************************************'
-puts "Equipment values set to:\n Mash tun volume = #{BrewingCalculations.max_mash_volume} gal"
-puts "Boil kettle volume = #{BrewingCalculations.max_boil_volume} gal"
-puts "Boil-off rate is #{100*(1-BrewingCalculations.boil_off)}%"
-puts "Default efficiency is #{BrewingCalculations.efficiency}"
+puts "Equipment values set to:\n Mash tun volume = #{calcs.max_mash_volume} gal"
+puts "Boil kettle volume = #{calcs.max_boil_volume} gal"
+puts "Boil-off rate is #{100*(1-calcs.boil_off)}%"
+puts "Default efficiency is #{calcs.efficiency}"
 puts 'Equipment/default values can be edited: open BrewCalc.py with Notepad and have at it!'
 puts '________________________________________________'
 
@@ -48,11 +48,11 @@ puts "Grain weight: #{round(grist_weight,2)}"
 
 # Predict OG, or let user enter a prediction.  Used to calculate pre-boil SG
 
-og_prediction = round(1 + (0.035 * BrewingCalculations.efficiency * grist_weight / batch_volume), 3)
+og_prediction = round(1 + (0.035 * calcs.efficiency * grist_weight / batch_volume), 3)
 
 flag = 'Relax, don\'t worry, have a homebrew'
 
-while flag != '' :
+while flag != ''
   puts "\nI predict an OG of #{og_prediction}"
   puts "Hit ENTER to accept, 'g' to change grist weight, or 'n' to input a different estimate: "
   flag = gets.chomp
@@ -64,7 +64,7 @@ while flag != '' :
     when 'g'
       puts '\nEnter new grist weight in pounds: '
       grist_weight = gets.chomp
-      og_prediction = round(1 + (0.035 * BrewingCalculations.efficiency * grist_weight / batch_volume),3)
+      og_prediction = round(1 + (0.035 * calcs.efficiency * grist_weight / batch_volume),3)
     when ''
       # Success!
     else
@@ -88,12 +88,12 @@ while flag != '' :
   # Input and check mash volume, temperature
   mash_volume = 1e6   # start at very high value
 
-  while mash_volume > BrewingCalculations.max_mash_volume
+  while mash_volume > calcs.max_mash_volume
     puts '\nEnter the mash water-to-grain ratio in quarts/pound '
     ratio = gets.chomp
     mash_volume = (ratio * grist_weight * 0.25) + (0.08 * grist_weight)
     # mash volume = water volume + grain volume; formula from www.rackers.org
-    if mash_volume > BrewingCalculations.max_mash_volume
+    if mash_volume > calcs.max_mash_volume
       puts "Mash volume, #{round(mash_volume,2)}, is greater than tun capacity!"
     end
   end
@@ -143,7 +143,7 @@ while flag != '' :
   # Find sparge water volume
 
   absorption = 0.1 * grist_weight   # grain absorbs about 0.1 gallon per pound
-  sparge_volume = round((batch_volume / BrewingCalculations.boil_off) - (strike_volume - absorption),2)
+  sparge_volume = round((batch_volume / calcs.boil_off) - (strike_volume - absorption),2)
 
   # Process water_type data
 
@@ -180,7 +180,7 @@ while flag != '' :
     txtFile.puts("\n\n\tAdd:\n\t\t#{round(cacl2 * sparge_volume / 5, 2)} tsp cacl2\n\t\t#{round(gypsum * sparge_volume / 5,2)} tsp gypsum")
     txtFile.puts('\n\nBoil water for yeast rehydration (if dry yeast)')
     txtFile.puts('\n\nVourlauf and drain mash\n\nBatch sparge')
-    txtFile.puts("\n\nCollect #{round(batch_volume / BrewingCalculations.boil_off, 2)} gallons with SG #{round( 1 + ((og_prediction-1)*BrewingCalculations.boil_off),3)}")
+    txtFile.puts("\n\nCollect #{round(batch_volume / calcs.boil_off, 2)} gallons with SG #{round( 1 + ((og_prediction-1)*calcs.boil_off),3)}")
     txtFile.puts('\n\nBoil!')
 
     # Write the boil additions
