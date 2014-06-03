@@ -1,3 +1,5 @@
+#! /usr/bin/env ruby
+
 require 'rubygems'
 
 class BrewingCalculations
@@ -32,23 +34,23 @@ puts '________________________________________________'
 
 # Take recipe-dependent inputs from user
 
-puts '\nGive this brew a name (this will be the filename): '
+puts 'Give this brew a name (this will be the filename): '
 name = gets.chomp
 puts "Recipe name: #{name}"
 
-puts '\nInputs for your batch'
+puts 'Inputs for your batch'
 
-puts '\nEnter the final batch size [gallons]: '
-batch_volume = gets.chomp
-puts "Batch size: #{round(batch_volume,2)}"
+puts 'Enter the final batch size [gallons]: '
+batch_volume = gets.chomp.to_f
+puts "Batch size: #{batch_volume.round(2)}"
 
-puts '\nEnter the grist weight [lbs.]: '
-grist_weight = gets.chomp
-puts "Grain weight: #{round(grist_weight,2)}"
+puts 'Enter the grist weight [lbs.]: '
+grist_weight = gets.chomp.to_f
+puts "Grain weight: #{grist_weight.round(2)}"
 
 # Predict OG, or let user enter a prediction.  Used to calculate pre-boil SG
 
-og_prediction = round(1 + (0.035 * calcs.efficiency * grist_weight / batch_volume), 3)
+og_prediction = (1 + (0.035 * calcs.efficiency * grist_weight / batch_volume)).round(3)
 
 flag = 'Relax, don\'t worry, have a homebrew'
 
@@ -59,28 +61,28 @@ while flag != ''
 
   case flag
     when 'n'
-      puts '\nEnter predicted OG: '
-      og_prediction = round(gets.chomp,3)
+      puts 'Enter predicted OG: '
+      og_prediction = gets.chomp.to_f.round(3)
     when 'g'
-      puts '\nEnter new grist weight in pounds: '
-      grist_weight = gets.chomp
-      og_prediction = round(1 + (0.035 * calcs.efficiency * grist_weight / batch_volume),3)
+      puts 'Enter new grist weight in pounds: '
+      grist_weight = gets.chomp.to_f
+      og_prediction = (1 + (0.035 * calcs.efficiency * grist_weight / batch_volume)).round(3)
     when ''
       # Success!
     else
-      puts '\nI think your finger slipped.  Try again, cowboy.'
+      puts 'I think your finger slipped.  Try again, cowboy.'
   end
 
   # Input the water profile
 
   water_type_valid = false
   while water_type_valid
-    puts '\nIs the recipe for a:\n' <<
+    puts 'Is the recipe for a:\n' <<
          '\tsoft water beer (pils, helles) [1]\n' <<
          '\troasty beer (stout, porter) [2]\n' <<
          '\tBritish beer [3]\n' <<
          '\tor standard beer? [4]\n'
-    water_type = gets.chomp
+    water_type = gets.chomp.to_i
     water_type_valid = true if water_type > 0 && water_type < 5
   end
   puts 'Okay!'
@@ -89,37 +91,37 @@ while flag != ''
   mash_volume = 1e6   # start at very high value
 
   while mash_volume > calcs.max_mash_volume
-    puts '\nEnter the mash water-to-grain ratio in quarts/pound '
-    ratio = gets.chomp
+    puts 'Enter the mash water-to-grain ratio in quarts/pound '
+    ratio = gets.chomp.to_f
     mash_volume = (ratio * grist_weight * 0.25) + (0.08 * grist_weight)
     # mash volume = water volume + grain volume; formula from www.rackers.org
     if mash_volume > calcs.max_mash_volume
-      puts "Mash volume, #{round(mash_volume,2)}, is greater than tun capacity!"
+      puts "Mash volume, #{mash_volume.round(2)}, is greater than tun capacity!"
     end
   end
 
   puts "Mash ratio: #{ratio}"
 
-  puts '\nEnter the desired mash temp in Fahrenheit: '
-  mash_temperature = gets.chomp
+  puts 'Enter the desired mash temp in Fahrenheit: '
+  mash_temperature = gets.chomp.to_f
   puts "Mash temp: #{mash_temperature}"
 
-  puts '\nEnter the grain temperature in Fahrenheit: '
-  grain_temperature = gets.chomp
+  puts 'Enter the grain temperature in Fahrenheit: '
+  grain_temperature = gets.chomp.to_f
   puts "Grain temp: #{grain_temperature}"
 
   # Hop and other additions
 
-  puts '\nHit ENTER to add reminders for hop/DME/other boil additions, or \'n\' to skip'
+  puts 'Hit ENTER to add reminders for hop/DME/other boil additions, or \'n\' to skip'
   flag = gets.chomp
   additions = []
 
   unless flag == 'n'
     flag = 'z'
-    puts '\nEnter time (minutes), weight (oz.), and name, e.g.: 60 1.0 Centennial <ENTER>'
+    puts 'Enter time (minutes), weight (oz.), and name, e.g.: 60 1.0 Centennial <ENTER>'
     puts 'When finished, enter \'f\''
     while flag != 'f'             # loops until input is 'f'
-      puts '\n--> '
+      puts '--> '
       flag = gets.chomp
       flag = flag.split unless flag == 'f'
 
@@ -138,12 +140,12 @@ while flag != ''
   # Process infusion temperature.  Formula from "How to Brew"
 
   strike_temperature = ((0.23/ratio)*(mash_temperature - grain_temperature) + mash_temperature).to_i
-  strike_volume = round(ratio * grist_weight * 0.25, 2)   # in gallons
+  strike_volume = (ratio * grist_weight * 0.25).round(2)   # in gallons
 
   # Find sparge water volume
 
   absorption = 0.1 * grist_weight   # grain absorbs about 0.1 gallon per pound
-  sparge_volume = round((batch_volume / calcs.boil_off) - (strike_volume - absorption),2)
+  sparge_volume = ((batch_volume / calcs.boil_off) - (strike_volume - absorption)).round(2)
 
   # Process water_type data
 
@@ -171,23 +173,23 @@ while flag != ''
 
   File.open("#{name}.txt", 'w') do |txtFile|
     txtFile.puts("Procedure for #{name}")
-    txtFile.puts("\n\nReplace #{round(grist_weight*sauermalz_percent*0.16,1)} oz basemalt with acidulated malt")
-    txtFile.puts("\n\nHeat #{strike_volume} gallons strike water to #{strike_temperature}F")
-    txtFile.puts("\n\n\tAdd:\n\t\t#{round(cacl2 * strike_volume / 5,2)} tsp cacl2\n\t\t#{round(gypsum * strike_volume / 5, 2)} tsp gypsum")
-    txtFile.puts("\n\n\tMash in to hit #{mash_temperature}F")
-    txtFile.puts('\n\n\tMash for 60 minutes')
-    txtFile.puts("\n\nHeat #{sparge_volume} gallons sparge water to 180F")
-    txtFile.puts("\n\n\tAdd:\n\t\t#{round(cacl2 * sparge_volume / 5, 2)} tsp cacl2\n\t\t#{round(gypsum * sparge_volume / 5,2)} tsp gypsum")
-    txtFile.puts('\n\nBoil water for yeast rehydration (if dry yeast)')
-    txtFile.puts('\n\nVourlauf and drain mash\n\nBatch sparge')
-    txtFile.puts("\n\nCollect #{round(batch_volume / calcs.boil_off, 2)} gallons with SG #{round( 1 + ((og_prediction-1)*calcs.boil_off),3)}")
-    txtFile.puts('\n\nBoil!')
+    txtFile.puts("Replace #{(grist_weight*sauermalz_percent*0.16).round(1)} oz basemalt with acidulated malt")
+    txtFile.puts("Heat #{strike_volume} gallons strike water to #{strike_temperature}F")
+    txtFile.puts("\tAdd:\n\t\t#{(cacl2 * strike_volume / 5).round(2)} tsp cacl2\n\t\t#{(gypsum * strike_volume / 5).round(2)} tsp gypsum")
+    txtFile.puts("\tMash in to hit #{mash_temperature}F")
+    txtFile.puts("\tMash for 60 minutes")
+    txtFile.puts("Heat #{sparge_volume} gallons sparge water to 180F")
+    txtFile.puts("\tAdd:\n\t\t#{(cacl2 * sparge_volume / 5).round(2)} tsp CaCl2\n\t\t#{(gypsum * sparge_volume / 5).round(2)} tsp gypsum")
+    txtFile.puts('Boil water for yeast rehydration (if dry yeast)')
+    txtFile.puts("Vourlauf and drain mash\n\nBatch sparge")
+    txtFile.puts("Collect #{(batch_volume / calcs.boil_off).round(2)} gallons with SG #{(1 + ((og_prediction-1)*calcs.boil_off)).round(3)}")
+    txtFile.puts('Boil!')
 
     # Write the boil additions
     same_flag = 0
     additions.each_with_index do |addition, i|
       if same_flag == 0
-        txtFile.puts("\n\n\t#{addition[0]} min")
+        txtFile.puts("\t#{addition[0]} min")
         txtFile.puts("\n\t\t#{addition[1]} oz #{addition[2]}")
       else
         txtFile.puts("\n\t\t#{addition[1]} oz #{addition[2]}")
@@ -198,7 +200,7 @@ while flag != ''
       end
     end
 
-    txtFile.puts("\n\nPredicted post-boil OG: #{og_prediction}")
+    txtFile.puts("Predicted post-boil OG: #{og_prediction}")
 
   end
 
