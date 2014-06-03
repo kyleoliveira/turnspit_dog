@@ -2,7 +2,7 @@
 
 require 'rubygems'
 
-class BrewingCalculations
+class BrewingProcedure
   attr_accessor :max_mash_volume, :max_boil_volume, :boil_off, :efficiency
 
   def initialize
@@ -20,15 +20,16 @@ end
 # max_boil_volume = 9.0   # set by kettle size, burner, etc.
 # boil_off = 0.82
 # efficiency = 0.75
-calcs = BrewingCalculations.new
+calcs = BrewingProcedure.new
 
 puts '**************************************************************'
 puts '* BrewCalc.py provided by Joel Sleppy, jdsleppyATgmailDOTcom *'
 puts '**************************************************************'
-puts "Equipment values set to:\n Mash tun volume = #{calcs.max_mash_volume} gal"
-puts "Boil kettle volume = #{calcs.max_boil_volume} gal"
-puts "Boil-off rate is #{100*(1-calcs.boil_off)}%"
-puts "Default efficiency is #{calcs.efficiency}"
+puts "Equipment values set to:"
+puts "\tMash tun volume = #{calcs.max_mash_volume} gal"
+puts "\tBoil kettle volume = #{calcs.max_boil_volume} gal"
+puts "\tBoil-off rate is #{100*(1-calcs.boil_off)}%"
+puts "\tDefault efficiency is #{calcs.efficiency}"
 puts 'Equipment/default values can be edited: open BrewCalc.py with Notepad and have at it!'
 puts '________________________________________________'
 
